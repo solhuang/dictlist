@@ -1,5 +1,5 @@
-from dictlist.dictlist import DictList
-from dictlist.dictlist import NotFound, InvalidList
+from filterlist.filterlist import FilterList
+from filterlist.filterlist import NotFound, InvalidList
 
 import pytest
 from copy import copy, deepcopy
@@ -21,26 +21,26 @@ people = [
         'occupation': 'plumber',
     },
 ]
-ppl = DictList(people)
+ppl = FilterList(people)
 
 
 def test_init_no_initial_list():
-    new_dictlist = DictList()
-    assert isinstance(new_dictlist, DictList)
-    assert isinstance(new_dictlist, list)
-    assert list(new_dictlist) == []
+    new_filterlist = FilterList()
+    assert isinstance(new_filterlist, FilterList)
+    assert isinstance(new_filterlist, list)
+    assert list(new_filterlist) == []
 
 
 def test_list_is_a_list_of_dictionaries():
     test_list = [1, 2, 3]
     with pytest.raises(InvalidList):
-        DictList(test_list)
+        FilterList(test_list)
 
 
 def test_init_wrong_type():
     test_list = 'abcd'
     with pytest.raises(InvalidList):
-        DictList(test_list)
+        FilterList(test_list)
 
 
 def test_get_returns_dict():
@@ -76,18 +76,18 @@ def test_filter_original_list_is_not_modified():
 
 def test_filter_returns_a_dict_list():
     result = ppl.filter(name='john')
-    assert isinstance(result, DictList)
+    assert isinstance(result, FilterList)
 
 
 def test_filter_chaining():
     result = ppl.filter(age=32).filter(name='bob')
     assert len(result) == 1
-    assert isinstance(result, DictList)
+    assert isinstance(result, FilterList)
 
 
 def test_filter__regex():
-    items = DictList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}, {'name': 'bvi10'}])
-    expected_result = DictList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}])
+    items = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}, {'name': 'bvi10'}])
+    expected_result = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}])
     result = items.filter(name__regex='\d/\d/\d')
     assert expected_result == result
 

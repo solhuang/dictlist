@@ -1,2 +1,2 @@
-# dictlist
-Library for filtering list of dictionaries
+# filterlist
+Library for filtering list of dictionaries using Django ORM style syntax

@@ -1,1 +1,0 @@
-from .dictlist import DictList as dictlist
