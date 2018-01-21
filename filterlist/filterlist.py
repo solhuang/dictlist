@@ -31,7 +31,11 @@ class FilterList(list):
             raise TypeError('All elements must be a dictionary. You are trying to add the element {}, which is not a dictionary.'.format(value))
         super(FilterList, self).append(value, *args, **kwargs)
 
-    def get(self, **kwargs):
+    def get(self, *args, **kwargs):
+        if len(args) > 0:
+            msg = 'Get method only accepts keyword arguments. For example, item.get(id=1)'
+            raise TypeError(msg)
+
         result_list = self.filter(**kwargs)
 
         if not result_list:
@@ -41,7 +45,7 @@ class FilterList(list):
             raise FilterListException('Expected to find 1 item but found {}'.format(len(self)))
         return result_list[0]
 
-    def filter(self, **kwargs):
+    def filter(self, *args, **kwargs):
         """
         Accepts a list of keyword arguments to search for.
         The key can contain the following special operations __regex, __contains
@@ -49,6 +53,10 @@ class FilterList(list):
         where name field contains the word "bob"
         return: new FilterList object that matches the given kwargs
         """
+        if len(args) > 0:
+            msg = 'Get method only accepts keyword arguments. For example, item.get(id=1)'
+            raise TypeError(msg)
+
         filtered_result = copy(self)
         for key, value in kwargs.items():
             operation = None
