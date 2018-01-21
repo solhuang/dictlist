@@ -44,7 +44,7 @@ Create a new filterlist by passing in an existing list of dictionaries:
 	people = filterlist(people)
 
 
-# get()
+### get()
 
 The get method will return one dictionary from within the list.  If none is found or if multiple dictionaries match the search criteria, an exception is raised.
 
@@ -56,9 +56,9 @@ You can also filter by multiple search criteria:
 	>>> people.get(status='RETIRED', age=57)
 	{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'}
 
-# filter()
+### filter()
 
-The filter method returns a filterlist object that matches the search criteria.  If none is found an empty filterlist is found.
+The filter method returns a filterlist object that matches the search criteria.  If none is found an empty filterlist is returned.
 
 	>>> people.filter(affiliation='REBEL_ALLIANCE')
 	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'},
@@ -70,7 +70,7 @@ Field Lookups
 
 By default, the arguments you pass into the get and filter methods will look for an exact match of the key/value pairs.  However, you can control how to match each field using the double underscore syntax.
 
-# in
+### in
 
 In a given iterable; often a list or tuple
 
@@ -78,14 +78,14 @@ In a given iterable; often a list or tuple
 	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'},
 	 {'status': 'ACTIVE', 'affiliation': 'EMPIRE', 'age': 42, 'id': 2, 'name': 'Darth Vader'}]
 
-# contains
+### contains
 
 Case-sensitive containment test.
 
 	>>> people.filter(name__contains='Darth')
 	[{'status': 'ACTIVE', 'affiliation': 'EMPIRE', 'age': 42, 'id': 2, 'name': 'Darth Vader'}]
 
-# icontains
+### icontains
 
 Case-insensitive containment test.
 
@@ -93,7 +93,7 @@ Case-insensitive containment test.
 	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'},
 	 {'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 896, 'id': 3, 'name': 'Yoda'}]
 
-# regex
+### regex
 
 Case-sensitive regular expression match.
 
