@@ -46,7 +46,7 @@ Create a new filterlist by passing in an existing list of dictionaries:
 
 ### get()
 
-The get method will return one dictionary from within the list.  If none is found or if multiple dictionaries match the search criteria, an exception is raised.
+The get method will return one dictionary from within the list of dictionaries where the key/value that was passed as the keyword arguments matches the key/value of the dictionary.  If none is found or if multiple dictionaries match the search criteria, an exception is raised.
 
 	>>> people.get(id=1)
 	{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'}
@@ -58,7 +58,7 @@ You can also filter by multiple search criteria:
 
 ### filter()
 
-The filter method returns a filterlist object that matches the search criteria.  If none is found an empty filterlist is returned.
+The filter method returns a filterlist object that matches the search criteria in the keyword arguments.  If none is found an empty filterlist is returned.
 
 	>>> people.filter(affiliation='REBEL_ALLIANCE')
 	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'},

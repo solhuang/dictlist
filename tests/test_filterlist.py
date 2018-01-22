@@ -68,6 +68,18 @@ def test_get_search_for_appended_item_returns_correct_results():
     assert new_person == ppl.get(name='jordan')
 
 
+def test_get_with_positional_args_raises_exception():
+
+    with pytest.raises(TypeError):
+        ppl.get('name')
+
+
+def test_get_with_no_args_raises_exception():
+
+    with pytest.raises(TypeError):
+        ppl.get()
+
+
 def test_filter_original_list_is_not_modified():
     tmp = copy(ppl)
     ppl.filter(name='john')
@@ -89,6 +101,13 @@ def test_filter__regex():
     items = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}, {'name': 'bvi10'}])
     expected_result = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}])
     result = items.filter(name__regex='\d/\d/\d')
+    assert expected_result == result
+
+
+def test_filter__iregex():
+    items = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}, {'name': 'bvi10'}])
+    expected_result = FilterList([{'name': 'ge-0/0/0'}, {'name': 'ge-0/0/1'}])
+    result = items.filter(name__iregex='GE-\d/\d/\d')
     assert expected_result == result
 
 
@@ -117,6 +136,38 @@ def test_filter__in():
     assert len(result) == 2
     assert result[0]['name'] == 'mary'
     assert result[1]['name'] == 'bob'
+
+
+def test_filter_with_positional_args_returns_error():
+
+    with pytest.raises(TypeError):
+        ppl.filter('name')
+
+
+def test_filter_with_no_args_returns_itself():
+    filtered_ppl = ppl.filter()
+    assert filtered_ppl == ppl
+
+
+def test_filter_wrong_operation_raises_exception():
+    with pytest.raises(TypeError):
+        ppl.filter(name__wrongoperation='bob')
+
+
+def test_filter_matching_none_works():
+    new_person = {
+        'name': 'mary',
+        'age': None,
+        'occupation': 'ceo',
+    }
+    ppl.append(new_person)
+    filtered_ppl = ppl.filter(age=None)
+    assert filtered_ppl[0] == new_person
+
+
+def test_filter__iexact():
+    filtered_ppl = ppl.filter(name__iexact='JOHN')
+    assert filtered_ppl == [ppl[0]]
 
 
 def test_append_non_dict():

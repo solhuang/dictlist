@@ -32,8 +32,12 @@ class FilterList(list):
         super(FilterList, self).append(value, *args, **kwargs)
 
     def get(self, *args, **kwargs):
-        if len(args) > 0:
+        if args:
             msg = 'Get method only accepts keyword arguments. For example, item.get(id=1)'
+            raise TypeError(msg)
+
+        if not kwargs:
+            msg = 'Get method requires at least one keyword argument. For example, item.get(id=1)'
             raise TypeError(msg)
 
         result_list = self.filter(**kwargs)
@@ -53,7 +57,9 @@ class FilterList(list):
         where name field contains the word "bob"
         return: new FilterList object that matches the given kwargs
         """
-        if len(args) > 0:
+
+        valid_operations = ['in', 'regex', 'iregex', 'contains', 'icontains', 'iexact']
+        if args:
             msg = 'Get method only accepts keyword arguments. For example, item.get(id=1)'
             raise TypeError(msg)
 
@@ -62,12 +68,21 @@ class FilterList(list):
             operation = None
             if '__' in key:
                 key, operation = key.split('__')
+                if operation not in valid_operations:
+                    msg = '{} is not a valid operation.  The valid operations are {}.  For example, item.filter(id__in=[1, 2])'.format(operation, ', '.join(valid_operations))
+                    raise TypeError(msg)
 
-            if operation == 'in':
+            if operation == 'iexact':
+                filtered_result = [item for item in filtered_result if key in item and item[key].lower() in value.lower()]
+
+            elif operation == 'in':
                 filtered_result = [item for item in filtered_result if key in item and item[key] in value]
 
             elif operation == 'regex':
                 filtered_result = [item for item in filtered_result if key in item and re.search(value, item[key])]
+
+            elif operation == 'iregex':
+                filtered_result = [item for item in filtered_result if key in item and re.search(value, item[key], re.IGNORECASE)]
 
             elif operation == 'contains':
                 filtered_result = [item for item in filtered_result if key in item and value in item[key]]
