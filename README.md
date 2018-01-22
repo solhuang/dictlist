@@ -70,6 +70,14 @@ Field Lookups
 
 By default, the arguments you pass into the get and filter methods will look for an exact match of the key/value pairs.  However, you can control how to match each field using the double underscore syntax.
 
+
+### iexact
+
+Case-insensitive exact match
+
+	>>> people.filter(name__iexact='darth vader')
+	[{'status': 'ACTIVE', 'affiliation': 'EMPIRE', 'age': 42, 'id': 2, 'name': 'Darth Vader'}]
+
 ### in
 
 In a given iterable; often a list or tuple
@@ -98,4 +106,11 @@ Case-insensitive containment test.
 Case-sensitive regular expression match.
 
 	>>> people.filter(name__regex='\w-\w')
+	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'}]
+
+### iregex
+
+Case-insensitive regular expression match.
+
+	>>> people.filter(name__iregex='obi-\w')
 	[{'status': 'RETIRED', 'affiliation': 'REBEL_ALLIANCE', 'age': 57, 'id': 1, 'name': 'Obi-Wan Kenobi'}]
