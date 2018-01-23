@@ -67,31 +67,65 @@ class FilterList(list):
         for key, value in kwargs.items():
             operation = None
             if '__' in key:
-                key, operation = key.split('__')
-                if operation not in valid_operations:
-                    msg = '{} is not a valid operation.  The valid operations are {}.  For example, item.filter(id__in=[1, 2])'.format(operation, ', '.join(valid_operations))
-                    raise TypeError(msg)
+                keys = key.split('__')
+                if keys[-1] in valid_operations:
+                    operation = keys[-1]
+                    keys = keys[:-1]
+            else:
+                keys = [key]
 
             if operation == 'iexact':
-                filtered_result = [item for item in filtered_result if key in item and item[key].lower() in value.lower()]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   self._get_value(keys, item).lower() in value.lower()]
 
             elif operation == 'in':
-                filtered_result = [item for item in filtered_result if key in item and item[key] in value]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   self._get_value(keys, item) in value]
 
             elif operation == 'regex':
-                filtered_result = [item for item in filtered_result if key in item and re.search(value, item[key])]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   re.search(value, self._get_value(keys, item))]
 
             elif operation == 'iregex':
-                filtered_result = [item for item in filtered_result if key in item and re.search(value, item[key], re.IGNORECASE)]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   re.search(value, self._get_value(keys, item), re.IGNORECASE)]
 
             elif operation == 'contains':
-                filtered_result = [item for item in filtered_result if key in item and value in item[key]]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   value in self._get_value(keys, item)]
 
             elif operation == 'icontains':
-                filtered_result = [item for item in filtered_result if key in item and value.lower() in item[key].lower()]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   value.lower() in self._get_value(keys, item).lower()]
 
             else:
-                filtered_result = [item for item in filtered_result if key in item and item[key] == value]
+                filtered_result = [item for item in filtered_result if
+                                   self._get_value(keys, item) is not None and
+                                   self._get_value(keys, item) == value]
 
         return self.__class__(filtered_result)
 
+    def _get_value(self, keys, mydict):
+        """
+        :param keys - a list of keys
+        :param mydict - a nested dictionary
+        returns the value of mydict[keys[0]][keys[1]]...
+                None if any of the keys is missing
+        """
+        tmp_dict = copy(mydict)
+        for i, key in enumerate(keys):
+            if key not in tmp_dict:
+                return None
+            value = tmp_dict.get(key)
+            if i == len(keys) - 1:
+                return value
+            else:
+                if not isinstance(value, dict):
+                    return None
+                tmp_dict = value
