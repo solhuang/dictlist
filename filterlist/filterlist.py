@@ -21,6 +21,8 @@ class FilterList(list):
         if not all(isinstance(item, dict) for item in self):
             raise InvalidList('Every element in the list must be a dictionary')
 
+        self.valid_operations = ['in', 'regex', 'iregex', 'contains', 'icontains', 'iexact']
+
     def __setitem__(self, key, item, *args, **kwargs):
         if not isinstance(item, dict):
             raise TypeError('All elements must be a dictionary. You are trying to add the element {}, which is not a dictionary'.format(item))
@@ -58,58 +60,84 @@ class FilterList(list):
         return: new FilterList object that matches the given kwargs
         """
 
-        valid_operations = ['in', 'regex', 'iregex', 'contains', 'icontains', 'iexact']
         if args:
             msg = 'Get method only accepts keyword arguments. For example, item.get(id=1)'
             raise TypeError(msg)
 
         filtered_result = copy(self)
-        for key, value in kwargs.items():
-            operation = None
-            if '__' in key:
-                keys = key.split('__')
-                if keys[-1] in valid_operations:
-                    operation = keys[-1]
-                    keys = keys[:-1]
-            else:
-                keys = [key]
-
-            if operation == 'iexact':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   self._get_value(keys, item).lower() in value.lower()]
-
-            elif operation == 'in':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   self._get_value(keys, item) in value]
-
-            elif operation == 'regex':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   re.search(value, self._get_value(keys, item))]
-
-            elif operation == 'iregex':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   re.search(value, self._get_value(keys, item), re.IGNORECASE)]
-
-            elif operation == 'contains':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   value in self._get_value(keys, item)]
-
-            elif operation == 'icontains':
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   value.lower() in self._get_value(keys, item).lower()]
-
-            else:
-                filtered_result = [item for item in filtered_result if
-                                   self._get_value(keys, item) is not None and
-                                   self._get_value(keys, item) == value]
+        for key_string, value in kwargs.items():
+            keys = self._get_keys(key_string)
+            operation = self._get_operation(key_string)
+            filtered_result = self._get_filtered_list(filtered_result, keys, value, operation)
 
         return self.__class__(filtered_result)
+
+    def _get_keys(self, key_string):
+        """
+        parses the key string into a list of keys
+        for example, if key_string is animal__dog__contains, it will return ['animal', 'dog']
+        return: a list of keys
+        """
+        assert key_string  # should never be an empty string
+        keys = key_string.split('__')
+        if keys[-1] in self.valid_operations:
+            keys = keys[:-1]
+        return keys
+
+    def _get_operation(self, key_string):
+        """
+        returns the operation
+        """
+        assert key_string  # should never be an empty string
+        operation = 'exact'
+        keys = key_string.split('__')
+        if keys[-1] in self.valid_operations:
+            operation = keys[-1]
+        return operation
+
+    def _get_filtered_list(self, original_list, keys, value, operation):
+        """
+        returns a list where the key matches the value based on the operation
+        """
+        result = []
+        for item in original_list:
+            try:
+                found_value = self._get_value(keys, item)
+            except NotFound:
+                continue
+
+            if operation == 'exact':
+                if found_value == value:
+                    result.append(item)
+
+            elif operation == 'iexact':
+                if found_value.lower() == value.lower():
+                    result.append(item)
+
+            elif operation == 'in':
+                if found_value in value:
+                    result.append(item)
+
+            elif operation == 'regex':
+                if re.search(value, found_value):
+                    result.append(item)
+
+            elif operation == 'iregex':
+                if re.search(value, found_value, re.IGNORECASE):
+                    result.append(item)
+
+            elif operation == 'contains':
+                if value in found_value:
+                    result.append(item)
+
+            elif operation == 'icontains':
+                if value.lower() in found_value.lower():
+                    result.append(item)
+
+            else:
+                raise FilterListException('{} is not a valid operation'.format(operation))
+
+        return result
 
     def _get_value(self, keys, mydict):
         """
@@ -121,11 +149,11 @@ class FilterList(list):
         tmp_dict = copy(mydict)
         for i, key in enumerate(keys):
             if key not in tmp_dict:
-                return None
+                raise NotFound
             value = tmp_dict.get(key)
             if i == len(keys) - 1:
                 return value
             else:
                 if not isinstance(value, dict):
-                    return None
+                    raise NotFound
                 tmp_dict = value

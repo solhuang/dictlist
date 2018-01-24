@@ -170,20 +170,15 @@ def test_filter_with_no_args_returns_itself():
     assert filtered_ppl == ppl
 
 
-# def test_filter_wrong_operation_raises_exception():
-#     with pytest.raises(TypeError):
-#         ppl.filter(name__wrongoperation='bob')
-
-# Note: Does not work if matching for None
-# def test_filter_matching_none_works():
-#     new_person = {
-#         'name': 'mary',
-#         'age': None,
-#         'occupation': 'ceo',
-#     }
-#     ppl.append(new_person)
-#     filtered_ppl = ppl.filter(age=None)
-#     assert filtered_ppl[0] == new_person
+def test_filter_matching_none_works():
+    new_person = {
+        'name': 'mary',
+        'age': None,
+        'occupation': 'ceo',
+    }
+    ppl.append(new_person)
+    filtered_ppl = ppl.filter(age=None)
+    assert filtered_ppl[0] == new_person
 
 
 def test_filter__iexact():
@@ -208,17 +203,17 @@ def test_get_value():
     value = ppl._get_value(keys, nested)
     assert value == 'woof'
 
-    keys = ['animal', 'cat']
-    value = ppl._get_value(keys, nested)
-    assert value is None
+    with pytest.raises(NotFound):
+        keys = ['animal', 'cat']
+        value = ppl._get_value(keys, nested)
 
     keys = ['animal', 'dog']
     value = ppl._get_value(keys, nested)
     assert value == {'noises': 'woof'}
 
-    keys = ['animal', 'dog', 'noises', 'woof']
-    value = ppl._get_value(keys, nested)
-    assert value is None
+    with pytest.raises(NotFound):
+        keys = ['animal', 'dog', 'noises', 'woof']
+        value = ppl._get_value(keys, nested)
 
 
 def test_append_non_dict():
@@ -229,3 +224,25 @@ def test_append_non_dict():
 def test_set_non_dict():
     with pytest.raises(TypeError):
         ppl[0]('non_dictionary')
+
+
+def test_get_keys():
+    key_string = 'animal__contains'
+    assert ppl._get_keys(key_string) == ['animal']
+
+    key_string = 'animal__dog__mammal'
+    assert ppl._get_keys(key_string) == ['animal', 'dog', 'mammal']
+
+    key_string = 'animal__dog__mammal__iexactly'
+    assert ppl._get_keys(key_string) == ['animal', 'dog', 'mammal', 'iexactly']
+
+
+def test_get_operation():
+    key_string = 'animal__contains'
+    assert ppl._get_operation(key_string) == 'contains'
+
+    key_string = 'animal__dog__mammal'
+    assert ppl._get_operation(key_string) == 'exact'
+
+    key_string = 'animal'
+    assert ppl._get_operation(key_string) == 'exact'
