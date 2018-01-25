@@ -9,7 +9,7 @@ except ImportError:
 setup(
     name='filterlist',
     packages=['filterlist'],
-    version='0.0.2',
+    version='0.0.3',
     description='Search list of dictionaries',
     author='Solomon Huang',
     author_email='huang.solomon@gmail.com',
