@@ -54,7 +54,7 @@ class FilterList(list):
     def filter(self, *args, **kwargs):
         """
         Accepts a list of keyword arguments to search for.
-        The key can contain the following special operations __regex, __contains
+        The key can contain special operations like __regex, __contains
         ie, you can pass in name__contains="bob", and this method will return all dictionaries in the list
         where name field contains the word "bob"
         return: new FilterList object that matches the given kwargs
@@ -144,7 +144,7 @@ class FilterList(list):
         :param keys - a list of keys
         :param mydict - a nested dictionary
         returns the value of mydict[keys[0]][keys[1]]...
-                None if any of the keys is missing
+                raise NotFound exception if any of the keys is missing
         """
         tmp_dict = copy(mydict)
         for i, key in enumerate(keys):
