@@ -127,5 +127,16 @@ Case-insensitive regular expression match.
 Nested Lookups
 ----
 
-To search inside nested dictionaries, use the double underscore to filter inside the nested dictionary. You can go as many levels deep as needed.  Also, all the field lookups still work for nested dictionaries.
+To search inside nested dictionaries, use the double underscore to filter inside the nested dictionary. You can go as many levels deep as needed:
+
+	>>> people.filter(homeworld__name='Tatooine')
+	[{'gender': 'male', 'birth_year': '41.9BBY', 'id': 2, 'homeworld': {'name': 'Tatooine', 'population': '200000'}, 'name': 'Darth Vader'},
+	 {'gender': 'n/a', 'birth_year': '112BBY', 'id': 3, 'homeworld': {'name': 'Tatooine', 'population': '200000'}, 'name': 'C-3PO'}]
+
+Also, all the field lookups still work for nested dictionaries:
+
+	>>> people.filter(homeworld__name__icontains='stew')
+	[{'gender': 'male', 'birth_year': '57BBY', 'id': 1, 'homeworld': {'name': 'Stewjon', 'population': '10000'}, 'name': 'Obi-Wan Kenobi'}]
+
+
 
