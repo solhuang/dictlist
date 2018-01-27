@@ -1,5 +1,6 @@
 from copy import copy
 import re
+from collections import Iterable
 
 
 class FilterListException(Exception):
@@ -101,55 +102,112 @@ class FilterList(list):
         """
         result = []
         for item in original_list:
-            try:
-                found_value = self._get_value(keys, item)
-            except NotFound:
-                continue
+            # adds the dictionary to the results if any of the keys match the value
+            if keys[-1] == '_any':
 
-            if operation == 'exact':
-                if found_value == value:
-                    result.append(item)
+                # get the leaf of the nested dictionary
+                if len(keys) > 1:
+                    try:
+                        nested_dict = self._get_value(keys[:-1], item)
+                    except NotFound:
+                        continue
+                else:
+                    nested_dict = item
 
-            elif operation == 'iexact':
-                if found_value.lower() == value.lower():
-                    result.append(item)
+                for _, found_value in nested_dict.items():
 
-            elif operation == 'in':
-                if found_value in value:
-                    result.append(item)
-
-            elif operation == 'regex':
-                if re.search(value, found_value):
-                    result.append(item)
-
-            elif operation == 'iregex':
-                if re.search(value, found_value, re.IGNORECASE):
-                    result.append(item)
-
-            elif operation == 'contains':
-                if value in found_value:
-                    result.append(item)
-
-            elif operation == 'icontains':
-                if value.lower() in found_value.lower():
-                    result.append(item)
+                    if self._matched_found_value(value, found_value, operation):
+                        result.append(item)
+                        break
 
             else:
-                raise FilterListException('{} is not a valid operation'.format(operation))
+                try:
+                    found_value = self._get_value(keys, item)
+                except NotFound:
+                    continue
+
+                if self._matched_found_value(value, found_value, operation):
+                    result.append(item)
 
         return result
 
+    def _matched_found_value(self, value, found_value, operation):
+        """
+        Returns : boolean: True if value matches found_value, otherwise, False
+        :param value: the value to match for
+        :param found_value: the value found in the dictionary
+        :param operation: determines how to match the value to found_value
+
+        """
+        if operation == 'exact':
+            if found_value == value:
+                return True
+            else:
+                return False
+
+        elif operation == 'iexact':
+            if found_value.lower() == value.lower():
+                return True
+            else:
+                return False
+
+        elif operation == 'in':
+            if isinstance(value, Iterable) and found_value in value:
+                return True
+            else:
+                return False
+
+        elif operation == 'regex':
+            if not isinstance(found_value, str):
+                return False
+            if re.search(value, found_value):
+                return True
+            else:
+                return False
+
+        elif operation == 'iregex':
+            if not isinstance(found_value, str):
+                return False
+            if re.search(value, found_value, re.IGNORECASE):
+                return True
+            else:
+                return False
+
+        elif operation == 'contains':
+            if not isinstance(found_value, Iterable):
+                return False
+
+            if value in found_value:
+                return True
+            else:
+                return False
+
+        elif operation == 'icontains':
+            if not isinstance(found_value, Iterable):
+                return False
+            if value.lower() in found_value.lower():
+                return True
+            else:
+                return False
+
+        else:
+            raise FilterListException('{} is not a valid operation'.format(operation))
+
     def _get_value(self, keys, mydict):
         """
-        :param keys - a list of keys
+        Gets the value from a dictionary based on the keys.
+        :param keys - a list of keys, each additional key will look for nested keys
         :param mydict - a nested dictionary
         returns the value of mydict[keys[0]][keys[1]]...
                 raise NotFound exception if any of the keys is missing
         """
+
         tmp_dict = copy(mydict)
         for i, key in enumerate(keys):
+
             if key not in tmp_dict:
                 raise NotFound
+
             value = tmp_dict.get(key)
             if i == len(keys) - 1:
                 return value

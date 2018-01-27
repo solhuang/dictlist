@@ -79,8 +79,9 @@ def test_get_search_for_appended_item_returns_correct_results():
         'age': 56,
         'occupation': 'basketball player',
     }
-    ppl.append(new_person)
-    assert new_person == ppl.get(name='jordan')
+    this_ppl = copy(ppl)
+    this_ppl.append(new_person)
+    assert new_person == this_ppl.get(name='jordan')
 
 
 def test_get_with_positional_args_raises_exception():
@@ -132,6 +133,14 @@ def test_filter__iregex():
     assert expected_result == result
 
 
+def test_filter__regex_non_strings():
+    result = ppl.filter(age__regex='.*')
+    assert result == []
+
+    result = ppl.filter(age__iregex='.*')
+    assert result == []
+
+
 def test_filter_nonexistent_key_returns_empty_list():
     assert [] == ppl.filter(abcdefg='john')
 
@@ -146,6 +155,14 @@ def test_filter__contains():
     assert result[0]['name'] == 'mary'
 
 
+def test_filter__contains_non_iterable_should_return_empty_list():
+    result = ppl.filter(age__contains='32')
+    assert result == []
+
+    result = ppl.filter(age__icontains='32')
+    assert result == []
+
+
 def test_filter__icontains():
     result = ppl.filter(name__icontains='MAR')
     assert len(result) == 1
@@ -157,6 +174,9 @@ def test_filter__in():
     assert len(result) == 2
     assert result[0]['name'] == 'mary'
     assert result[1]['name'] == 'bob'
+
+    result = ppl.filter(name__in=5)
+    assert result == []
 
 
 def test_filter_with_positional_args_returns_error():
@@ -176,8 +196,9 @@ def test_filter_matching_none_works():
         'age': None,
         'occupation': 'ceo',
     }
-    ppl.append(new_person)
-    filtered_ppl = ppl.filter(age=None)
+    this_ppl = copy(ppl)
+    this_ppl.append(new_person)
+    filtered_ppl = this_ppl.filter(age=None)
     assert filtered_ppl[0] == new_person
 
 
@@ -188,6 +209,36 @@ def test_filter__iexact():
 
 def test_filter_nested_dicts():
     filtered_ppl = ppl.filter(facts__movie='Star Wars')
+    assert filtered_ppl == [ppl[0]]
+
+
+def test_filter_any():
+    filtered_ppl = ppl.filter(_any='fireman')
+    assert filtered_ppl == [ppl[0]]
+
+
+def test_filter_any_multiple_matches():
+    ppl[0]['name'] = 'fireman'
+    filtered_ppl = ppl.filter(_any='fireman')
+    assert filtered_ppl == [ppl[0]]
+
+
+def test_filter_any_operations():
+    filtered_ppl = ppl.filter(_any__contains='lumber')
+    assert filtered_ppl == [ppl[2]]
+
+    filtered_ppl = ppl.filter(_any__regex='^m.*')  # matches mary
+    assert filtered_ppl == [ppl[1]]
+
+    filtered_ppl = ppl.filter(_any__in=['ceo', 'plumber'])
+    assert filtered_ppl == [ppl[1], ppl[2]]
+
+
+def test_filter_any_nested():
+    filtered_ppl = ppl.filter(facts___any='Star Wars')
+    assert filtered_ppl == [ppl[0]]
+
+    filtered_ppl = ppl.filter(facts___any__contains='Star')
     assert filtered_ppl == [ppl[0]]
 
 
