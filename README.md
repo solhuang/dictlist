@@ -137,9 +137,9 @@ Also, all the field lookups still work for nested dictionaries:
 
 Filter Based on Any Key
 ----
-To search for a value that match any of the keys in a dictionary, use the _any keyword.
+To search whether a value exists regardless of the key, use the _any special keyword instead of the key name.
 
-For example, if you wan to search for all users that match the word 'Darth Vader' regardless of key:
+For example, if you want to search for all items that match the word 'Darth Vader' regardless of key, you can do the following:
 
 	>>> people.filter(_any='Darth Vader')
 	[{'gender': 'male', 'birth_year': 41, 'id': 2, 'homeworld': {'name': 'Tatooine'}, 'name': 'Darth Vader'}]
