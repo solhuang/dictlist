@@ -10,7 +10,6 @@ people = [
         'age': 32,
         'occupation': 'fireman',
         'facts': {
-            'quote': 'you miss 100% of the shots you don\'t take',
             'movie': 'Star Wars'
         },
         'pets': 'dog',
@@ -20,7 +19,6 @@ people = [
         'age': 32,
         'occupation': 'ceo',
         'facts': {
-            'quote': 'Every strike brings me closer to the next home run',
             'movie': 'Fight Club'
         },
         'pets': '',
@@ -30,7 +28,6 @@ people = [
         'age': 32,
         'occupation': 'plumber',
         'facts': {
-            'quote': 'We become what we think about',
             'movie': 'The Godfather'
         },
         'pets': 'cat',
@@ -224,6 +221,10 @@ def test_filter_any_multiple_matches():
 
 
 def test_filter_any_operations():
+
+    filtered_ppl = ppl.filter(_any__icontains='lumber')
+    assert filtered_ppl == [ppl[2]]
+
     filtered_ppl = ppl.filter(_any__contains='lumber')
     assert filtered_ppl == [ppl[2]]
 

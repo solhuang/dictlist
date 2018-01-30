@@ -183,8 +183,11 @@ class FilterList(list):
                 return False
 
         elif operation == 'icontains':
+            if isinstance(found_value, dict):
+                return False
             if not isinstance(found_value, Iterable):
                 return False
+
             if value.lower() in found_value.lower():
                 return True
             else:
